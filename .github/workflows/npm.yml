@@ -1,0 +1,12 @@
+name: Publish (NPM)
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    uses: li0ard/workflow/.github/workflows/npm.yml@011b6c3387ee28ccb17fc6b849a4d117ab12472b
+    permissions:
+      contents: read
+      id-token: write
