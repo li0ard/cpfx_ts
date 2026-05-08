@@ -49,6 +49,16 @@ const result = await proceedCryptoProContainer(
 console.log(result.pem);
 ```
 
+### Изменение флага экспортируемости
+```ts
+import { changeContainerExportable } from "@li0ard/cpfx";
+
+const headerKey = Bun.file("/path/to/header.key");
+const newHeaderKey = changeContainerExportable(await file.bytes(), true); // Разрешить экспорт
+
+await headerKey.write(newHeaderKey);
+```
+
 ## Ссылки
 - [Статья про cpfx на Хабре](https://habr.com/ru/articles/693600/)
 - [Статья про ckey на Хабре](https://habr.com/ru/articles/823772/)

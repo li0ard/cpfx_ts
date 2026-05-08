@@ -1,9 +1,9 @@
-import type { TArg } from "@li0ard/gost3413";
+import type { TArg, TRet } from "@li0ard/gost3413";
 import { err, ok, type Result } from "../lib/const.js";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { Container } from "./schemas/main.scheme.js";
 import { ContainerMask, ContainerPrimary } from "./schemas/other.scheme.js";
-import { ks2pem } from "../lib/crypto.js";
+import { ks2pem } from "../lib/utils.js";
 
 /**
  * Декодирование контейнера КриптоПро
@@ -32,4 +32,19 @@ export const proceedCryptoProContainer = async (
         console.error(e)
         return err(e as string);
     }
+}
+
+/**
+ * Изменение флага экспортируемости контейнера
+ * @param headerKey Содержимое файла header.key
+ * @param exportable Новое значение флага экспортируемости
+ */
+export const changeContainerExportable = (
+    headerKey: TArg<Uint8Array>,
+    exportable: boolean
+): TRet<Uint8Array> => {
+    const container = AsnConvert.parse(headerKey, Container);
+    container.setExportable(exportable);
+
+    return new Uint8Array(AsnConvert.serialize(container));
 }

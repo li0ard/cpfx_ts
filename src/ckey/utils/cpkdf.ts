@@ -6,8 +6,8 @@ export const derive = async (
     passphrase: TArg<Uint8Array>,
     salt: TArg<Uint8Array>
 ): Promise<TRet<Uint8Array>> => {
-    let hasher = Streebog256.create()
-    const bs = hasher.outputLen * 2
+    let hasher = Streebog256.create();
+    const bs = hasher.outputLen * 2;
     if(passphrase.length * 4 > 1024) throw new Error("passphrase cannot be longer than 256 symbols");
 
     // Делаем пароль в 4 раза больше

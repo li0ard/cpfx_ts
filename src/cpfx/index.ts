@@ -4,7 +4,7 @@ import { PFX, SafeContents } from "@peculiar/asn1-pfx";
 import { AsnConvert, OctetString } from "@peculiar/asn1-schema";
 import { KeyBag, PBEParameters } from "./schema.js";
 import { decodeExport, decodeTransport, parseBlob, prepareTransportKey } from "./utils.js";
-import { ks2pem } from "../lib/crypto.js";
+import { ks2pem } from "../lib/utils.js";
 import { err, id_gost3410_12_256, id_gost3410_12_512, id_gostpbe, ok, type Result } from "../lib/const.js";
 
 /**

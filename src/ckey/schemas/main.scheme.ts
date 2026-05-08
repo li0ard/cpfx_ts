@@ -131,6 +131,23 @@ export class Container {
             this.mac
         );
     }
+    
+    /** Смена флага экспортируемости */
+    public setExportable(exportable: boolean) {
+        const bitString = this.content.primaryKeyParameters.attributes;
+        const arr = new Uint8Array(bitString.value);
+
+        if (arr.length === 0) return;
+
+        const mask = 0b10000000;
+
+        if (exportable) arr[0]! |= mask;
+        else arr[0]! &= ~mask;
+
+        bitString.value = arr.buffer;
+        this.content.primaryKeyParameters.attributes = bitString;
+        this.mac = computeContainerMAC(new Uint8Array(AsnConvert.serialize(this.content)));
+    }
 
     public async verifyPassword(passw: string): Promise<boolean> {
         if(!this.content.primaryFP) throw new Error("Missing Primary FP");

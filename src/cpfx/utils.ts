@@ -73,9 +73,9 @@ export const decodeTransport = (
  * @param blob Ключевой блоб
  */
 export const parseBlob = (blob: TArg<Uint8Array>): ParsedBlob => {
-    const parsed = AsnConvert.parse(blob, PrivateKeyInfo)
-    const cryptoproBlob = new Uint8Array(parsed.privateKey.buffer)
-    const parsedBlob = AsnConvert.parse(cryptoproBlob.slice(16), ExportKeyBlob)
+    const parsed = AsnConvert.parse(blob, PrivateKeyInfo);
+    const cryptoproBlob = new Uint8Array(parsed.privateKey.buffer);
+    const parsedBlob = AsnConvert.parse(cryptoproBlob.slice(16), ExportKeyBlob);
 
     return {
         exportEncoding: concatBytes(
