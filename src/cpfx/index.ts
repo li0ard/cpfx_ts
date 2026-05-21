@@ -1,4 +1,4 @@
-import type { TArg } from "@li0ard/gost3413";
+import type { TArg } from "@noble/hashes/utils.js";
 import { id_data } from "@peculiar/asn1-cms";
 import { PFX, SafeContents } from "@peculiar/asn1-pfx";
 import { AsnConvert, OctetString } from "@peculiar/asn1-schema";

@@ -1,6 +1,6 @@
-import { equalBytes } from "@li0ard/gost3413";
 import { AsnProp, AsnPropTypes } from "@peculiar/asn1-schema";
 import { computeMaskMAC } from "../utils/mac.js";
+import { equalBytes } from "@noble/curves/utils.js";
 
 /** Содержимое `name.key` */
 export class ContainerName {
@@ -12,15 +12,15 @@ export class ContainerName {
 export class ContainerMask {
     /** Маска для шифрования приватного ключа */
     @AsnProp({ type: AsnPropTypes.OctetString })
-    mask: Uint8Array = new Uint8Array();
+    mask!: ArrayBuffer;
 
     /** Соль для деривации пароля */
     @AsnProp({ type: AsnPropTypes.OctetString })
-    salt: Uint8Array = new Uint8Array();
+    salt!: ArrayBuffer;
 
     /** MAC маски и соли */
     @AsnProp({ type: AsnPropTypes.OctetString })
-    mac: Uint8Array = new Uint8Array();
+    mac!: ArrayBuffer;
 
     /** Проверка валидности MAC маски и соли */
     public isValidMAC(): boolean {

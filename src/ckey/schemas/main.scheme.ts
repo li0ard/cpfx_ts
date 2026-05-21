@@ -1,14 +1,15 @@
-import { bytesToNumberLE, equalBytes, numberToBytesBE, type TRet } from "@li0ard/gost3413";
 import { AsnArray, AsnConvert, AsnProp, AsnPropTypes, AsnType, AsnTypeTypes, BitString } from "@peculiar/asn1-schema";
 import { computeContainerMAC, computePasswordMAC } from "../utils/mac.js";
 import { oid2curves } from "../utils/curves.js";
 import type { ContainerMask } from "./other.scheme.js";
-import { decryptECB, sboxes } from "@li0ard/magma";
-import { derive } from "../utils/cpkdf.js";
 import { Field } from "@noble/curves/abstract/modular.js";
-import { getPublicKey } from "@li0ard/gostcurves";
+import { getPublicKey } from "@li0ard/gost/gost3410.js";
 import type { ExportOids } from "../../cpfx/schema.js";
 import { id_gost3410_12_256, id_gost3410_12_512, id_gost3410_agreement_512 } from "../../lib/const.js";
+import { cpkdf } from "@li0ard/gost/kdf.js";
+import { bytesToNumberLE, equalBytes, numberToBytesBE, type TRet } from "@noble/curves/utils.js";
+import { ecb } from "@li0ard/gost/modes.js";
+import { Magma, magmaSboxes } from "@li0ard/gost/magma.js";
 
 export class GostPrivateKeyOIDs {
     @AsnProp({ type: AsnPropTypes.ObjectIdentifier })
@@ -128,7 +129,7 @@ export class Container {
     public isValidMAC(): boolean {
         return equalBytes(
             computeContainerMAC(new Uint8Array(AsnConvert.serialize(this.content))),
-            this.mac
+            new Uint8Array(this.mac)
         );
     }
     
@@ -167,12 +168,9 @@ export class Container {
         const curve = oid2curves[this.content.primaryKeyParameters.algorithm.oids.curve];
         if(!curve) throw new Error("Invalid curve");
 
-        const pk = bytesToNumberLE(decryptECB(
-            await derive(new TextEncoder().encode(passw), new Uint8Array(masks.salt)),
-            new Uint8Array(primary),
-            true,
-            sboxes.ID_TC26_GOST_28147_PARAM_Z
-        ));
+        const pk = bytesToNumberLE(ecb(
+            new Magma(cpkdf(new TextEncoder().encode(passw), new Uint8Array(masks.salt)), magmaSboxes.ID_TC26_GOST_28147_PARAM_Z, true)
+        ).decrypt(new Uint8Array(primary)));
         const m = bytesToNumberLE(new Uint8Array(masks.mask));
         const raw = numberToBytesBE(Field(curve.n).div(pk, m), curve.length);
         if(this.content.primaryFP && !equalBytes(

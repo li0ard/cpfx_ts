@@ -1,6 +1,6 @@
 {
   "name": "@li0ard/cpfx",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -27,11 +27,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@li0ard/gost341194": "^0.1.6",
-    "@li0ard/gost3413": "^0.1.8",
-    "@li0ard/gostcurves": "^0.1.6",
-    "@li0ard/magma": "^0.2.0",
-    "@li0ard/streebog": "^0.2.6",
+    "@li0ard/gost": "^0.1.4",
     "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.2.0",
     "@peculiar/asn1-cms": "^2.7.0",

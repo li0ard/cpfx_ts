@@ -10,7 +10,7 @@ import {
     ID_GOSTR3410_2012_512_PARAM_SET_C,
     ID_GOSTR3410_2012_512_TEST_PARAM_SET,
     type GostCurveParameters 
-} from "@li0ard/gostcurves";
+} from "@li0ard/gost/gost3410.js";
 
 export const oid2curves: Record<string, GostCurveParameters> = {
     "1.2.643.7.1.2.1.1.1": ID_GOSTR3410_2012_256_PARAM_SET_A,

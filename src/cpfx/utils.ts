@@ -1,10 +1,12 @@
-import { gost341194 } from "@li0ard/gost341194";
-import { concatBytes, hexToBytes, numberToBytesBE, type TArg, type TRet } from "@li0ard/gost3413";
-import { decryptCFB, sboxes, unwrap } from "@li0ard/magma";
 import { ExportKeyBlob, type ParsedBlob } from "./schema.js";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { PrivateKeyInfo } from "@peculiar/asn1-pkcs8";
-import { kdf_gostr3411_2012_256 } from "@li0ard/streebog";
+import { concatBytes, hexToBytes, type TArg, type TRet } from "@noble/hashes/utils.js";
+import { numberToBytesBE } from "@noble/curves/utils.js";
+import { gost341194 } from "@li0ard/gost/gost341194.js";
+import { Magma, magmaSboxes } from "@li0ard/gost/magma.js";
+import { cfb, kwp } from "@li0ard/gost/modes.js";
+import { kdf_gostr3411_2012_256 } from "@li0ard/gost/kdf.js";
 
 /** Преобразование строки в UTF-16le байты */
 const utf16le = (str: string): TRet<Uint8Array> => {
@@ -54,13 +56,11 @@ export const decodeTransport = (
     key: TArg<Uint8Array>,
     salt: TArg<Uint8Array>,
     encrypted: TArg<Uint8Array>
-): TRet<Uint8Array> => decryptCFB(
-    key,
-    encrypted,
-    salt.slice(0, 8),
-    true,
-    sboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET
-);
+): TRet<Uint8Array> => {
+    const cipher = new Magma(key, magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET, true);
+    
+    return cfb(cipher, salt.slice(0,8)).decrypt(encrypted);
+}
 
 /**
  * Парсинг экспортного представления ключа
@@ -75,7 +75,7 @@ export const decodeTransport = (
 export const parseBlob = (blob: TArg<Uint8Array>): ParsedBlob => {
     const parsed = AsnConvert.parse(blob, PrivateKeyInfo);
     const cryptoproBlob = new Uint8Array(parsed.privateKey.buffer);
-    const parsedBlob = AsnConvert.parse(cryptoproBlob.slice(16), ExportKeyBlob);
+    const parsedBlob = AsnConvert.parse(cryptoproBlob.subarray(16), ExportKeyBlob);
 
     return {
         exportEncoding: concatBytes(
@@ -107,5 +107,5 @@ export const decodeExport = (
     data: TArg<Uint8Array>
 ): TRet<Uint8Array> => {
     const KEKe = kdf_gostr3411_2012_256(key, hexToBytes("26BDB878"), data.slice(0, 8));
-    return unwrap(KEKe, data);
+    return kwp(KEKe).unwrap(data);
 }

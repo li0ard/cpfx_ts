@@ -1,4 +1,4 @@
-import type { TArg } from "@li0ard/gost3413";
+import type { TArg } from "@noble/hashes/utils.js";
 import { base64 } from "@scure/base";
 import { PrivateKeyOids, type ExportOids } from "../cpfx/schema.js";
 import { AsnConvert, OctetString } from "@peculiar/asn1-schema";

@@ -1,4 +1,4 @@
-import type { TArg, TRet } from "@li0ard/gost3413";
+import type { TArg, TRet } from "@noble/hashes/utils.js";
 import { err, ok, type Result } from "../lib/const.js";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { Container } from "./schemas/main.scheme.js";

@@ -1,4 +1,4 @@
-import type { TRet } from "@li0ard/gost3413";
+import type { TRet } from "@noble/hashes/utils.js";
 import { PKCS8ShroudedKeyBag } from "@peculiar/asn1-pfx";
 import { AsnProp, AsnPropTypes, BitString } from "@peculiar/asn1-schema";
 
