@@ -1,5 +1,5 @@
 import { AsnProp, AsnPropTypes } from "@peculiar/asn1-schema";
-import { computeMaskMAC } from "../utils/mac.js";
+import { computeMaskMAC } from "../mac.js";
 import { equalBytes } from "@noble/curves/utils.js";
 
 /** Содержимое `name.key` */

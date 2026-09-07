@@ -3,14 +3,13 @@ import { mac_legacy as mac_legacy_ } from "@li0ard/gost/modes.js";
 import { Magma, magmaSboxes } from "@li0ard/gost/magma.js";
 import { cpkdf } from "@li0ard/gost/kdf.js";
 
-
 /** Вычисление MAC контейнера */
 export const computeContainerMAC = (
     data: TArg<Uint8Array>
 ): TRet<Uint8Array> => mac_legacy_(
     new Magma(new Uint8Array(32), magmaSboxes.ID_TC26_GOST_28147_PARAM_Z, true),
     new Uint8Array(8)
-).compute(data).slice(0, 4)
+).compute(data).slice(0, 4);
 
 /** Вычисление MAC пароля */
 export const computePasswordMAC = async (

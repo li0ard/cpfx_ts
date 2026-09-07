@@ -21,21 +21,21 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "typedoc": "^0.28.19"
+    "typedoc": "^0.28.20"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@li0ard/gost": "^0.1.4",
-    "@noble/curves": "^2.2.0",
-    "@noble/hashes": "^2.2.0",
-    "@peculiar/asn1-cms": "^2.7.0",
-    "@peculiar/asn1-pfx": "^2.7.0",
-    "@peculiar/asn1-pkcs8": "^2.7.0",
-    "@peculiar/asn1-schema": "^2.7.0",
-    "@peculiar/asn1-x509": "^2.7.0",
-    "@scure/base": "^2.2.0"
+    "@li0ard/gost": "^0.2.3",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
+    "@peculiar/asn1-cms": "^2.9.4",
+    "@peculiar/asn1-pfx": "^2.9.4",
+    "@peculiar/asn1-pkcs8": "^2.9.4",
+    "@peculiar/asn1-schema": "^2.9.4",
+    "@peculiar/asn1-x509": "^2.9.4",
+    "@scure/base": "^2.4.0"
   },
   "files": ["dist"],
   "publishConfig": {

@@ -59,7 +59,7 @@ export const decodeTransport = (
 ): TRet<Uint8Array> => {
     const cipher = new Magma(key, magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET, true);
     
-    return cfb(cipher, salt.slice(0,8)).decrypt(encrypted);
+    return cfb(cipher, salt.subarray(0,8)).decrypt(encrypted);
 }
 
 /**
@@ -105,7 +105,6 @@ export const parseBlob = (blob: TArg<Uint8Array>): ParsedBlob => {
 export const decodeExport = (
     key: TArg<Uint8Array>,
     data: TArg<Uint8Array>
-): TRet<Uint8Array> => {
-    const KEKe = kdf_gostr3411_2012_256(key, hexToBytes("26BDB878"), data.slice(0, 8));
-    return kwp(KEKe).unwrap(data);
-}
+): TRet<Uint8Array> => kwp(kdf_gostr3411_2012_256(
+    key,hexToBytes("26BDB878"), data.subarray(0, 8)
+)).unwrap(data);

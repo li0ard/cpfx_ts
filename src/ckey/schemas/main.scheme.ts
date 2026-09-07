@@ -1,15 +1,13 @@
 import { AsnArray, AsnConvert, AsnProp, AsnPropTypes, AsnType, AsnTypeTypes, BitString } from "@peculiar/asn1-schema";
-import { computeContainerMAC, computePasswordMAC } from "../utils/mac.js";
-import { oid2curves } from "../utils/curves.js";
+import { computeContainerMAC, computePasswordMAC } from "../mac.js";
 import type { ContainerMask } from "./other.scheme.js";
-import { Field } from "@noble/curves/abstract/modular.js";
-import { getPublicKey } from "@li0ard/gost/gost3410.js";
 import type { ExportOids } from "../../cpfx/schema.js";
 import { id_gost3410_12_256, id_gost3410_12_512, id_gost3410_agreement_512 } from "../../lib/const.js";
 import { cpkdf } from "@li0ard/gost/kdf.js";
 import { bytesToNumberLE, equalBytes, numberToBytesBE, type TRet } from "@noble/curves/utils.js";
 import { ecb } from "@li0ard/gost/modes.js";
 import { Magma, magmaSboxes } from "@li0ard/gost/magma.js";
+import { getCurveByOid } from "@li0ard/gost/oids.js";
 
 export class GostPrivateKeyOIDs {
     @AsnProp({ type: AsnPropTypes.ObjectIdentifier })
@@ -165,16 +163,18 @@ export class Container {
     /** Экспорт приватного ключа из контейнера */
     public async getPrivateKey(passw: string, primary: Uint8Array, masks: ContainerMask): Promise<TRet<Uint8Array>> {
         if(!masks.isValidMAC()) console.warn("Неудачная проверка MAC маски и соли");
-        const curve = oid2curves[this.content.primaryKeyParameters.algorithm.oids.curve];
-        if(!curve) throw new Error("Invalid curve");
+        const signer = getCurveByOid(this.content.primaryKeyParameters.algorithm.oids.curve);
+        if(!signer) throw new Error("Invalid curve");
+
+        const curveLength = signer.utils.parameters.length;
 
         const pk = bytesToNumberLE(ecb(
             new Magma(cpkdf(new TextEncoder().encode(passw), new Uint8Array(masks.salt)), magmaSboxes.ID_TC26_GOST_28147_PARAM_Z, true)
         ).decrypt(new Uint8Array(primary)));
         const m = bytesToNumberLE(new Uint8Array(masks.mask));
-        const raw = numberToBytesBE(Field(curve.n).div(pk, m), curve.length);
+        const raw = numberToBytesBE(signer.Point.Fn.div(pk, m), curveLength);
         if(this.content.primaryFP && !equalBytes(
-            getPublicKey(curve, raw).slice(curve.length - 7, curve.length + 1).reverse(),
+            signer.getPublicKey(raw, false).slice(curveLength - 7, curveLength + 1).reverse(),
             new Uint8Array(this.content.primaryFP)
         ))
             throw new Error("Public key validation error");
@@ -188,7 +188,8 @@ export class Container {
             algorithm: (
                 this.content.primaryKeyParameters.algorithm.algorithmIdentifier == id_gost3410_agreement_512
                 ? id_gost3410_12_512
-                : id_gost3410_12_256),
+                : id_gost3410_12_256
+            ),
             curve: this.content.primaryKeyParameters.algorithm.oids.curve,
             digest: this.content.primaryKeyParameters.algorithm.oids.digest,
         }
