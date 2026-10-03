@@ -77,18 +77,19 @@ export const decodeTransport = (
 export const parseBlob = (blob: TArg<Uint8Array>) => {
     const pki = AsnConvert.parse(blob, PrivateKeyInfo);
     const parsedBlob = AsnConvert.parse(
-        new Uint8Array(pki.privateKey.buffer).subarray(16),
+        new Uint8Array(pki.privateKey.buffer).subarray(16), // Пропускаем блоб КриптоПро
         ExportedKey
     );
 
     const keyOids = AsnConvert.parse(parsedBlob.value.keyParameters.privateKeyParameters.parameters!, Gost3410Parameters)
 
     return {
+        // Формат для key wrap Магмы: UKM || CEK_ENC || CEK_MAC
         exportEncoding: concatBytes(
             new Uint8Array(parsedBlob.value.ukm),
             new Uint8Array(parsedBlob.value.cek.enc),
             new Uint8Array(parsedBlob.value.cek.mac)
-        ),
+        ), 
         oids: {
             algorithm: pki.privateKeyAlgorithm.algorithm,
             curve: keyOids.curve,

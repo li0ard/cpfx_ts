@@ -145,7 +145,7 @@ export class Container {
         );
     }
 
-    public async verifyPassword(passw: string): Promise<boolean> {
+    async verifyPassword(passw: string): Promise<boolean> {
         if(!this.content.primaryFP) throw new Error("Missing Primary FP");
         if(!this.content.hmacPassword) throw new Error("Missing password HMAC");
         return equalBytes(

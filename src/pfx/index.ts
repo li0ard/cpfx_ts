@@ -48,24 +48,16 @@ export const proceed_pfx = async (
         keyBag.encryptionAlgorithm.parameters!,
         PBEParameters
     );
+    if(parameters.rounds <= 0) throw new Error("Invalid round counter, must be >0");
     
     const transportSalt = new Uint8Array(parameters.salt);
     const transportKey = await prepareTransportKey(password, transportSalt, parameters.rounds);
-    try {
-        const pki = decodeTransport(
-            transportKey,
-            transportSalt,
-            new Uint8Array(keyBag.encryptedData.buffer)
-        );
+    
+    const pki = decodeTransport(
+        transportKey,
+        transportSalt,
+        new Uint8Array(keyBag.encryptedData.buffer)
+    );
         
-        return decodeExport(transportKey, pki);
-    } catch(e) {
-        console.error(e);
-        throw new Error("Blob decoding error. Perhaps just incorrect password");
-    }
+    return decodeExport(transportKey, pki);
 }
-
-console.log(await proceed_pfx(
-    await Bun.file("tests/data/256_qawsqaws.pfx").bytes(),
-    "qawsqaws"
-))
