@@ -1,4 +1,3 @@
-import { SafeBag } from "@peculiar/asn1-pfx";
 import { AsnProp, AsnPropTypes } from "@peculiar/asn1-schema";
 import { PrivateKeyParameters } from "../common.js";
 
@@ -10,15 +9,6 @@ export class PBEParameters {
     rounds = 0;
 
     constructor(params: Partial<PBEParameters> = {}) {
-        Object.assign(this, params);
-    }
-}
-
-export class KeyBag {
-    @AsnProp({ type: SafeBag })
-    value = new SafeBag();
-
-    constructor(params: Partial<KeyBag> = {}) {
         Object.assign(this, params);
     }
 }
