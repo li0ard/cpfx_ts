@@ -38,11 +38,12 @@ export const prepareTransportKey = async (
     salt: TArg<Uint8Array>,
     rounds: number
 ): Promise<TRet<Uint8Array>> => {
-    let key = utf16le(pass);
-    for(let i = 1; i < rounds + 1; i++)
-        key = gost341194(concatBytes(key, salt, numberToBytesBE(i, 2)));
+    const hasher = gost341194.create();
+    const out = hasher.update(utf16le(pass)).update(salt).update(numberToBytesBE(1, 2)).digest();
+    for (let i = 2; i <= rounds; i++)
+        hasher.update(out).update(salt).update(numberToBytesBE(i, 2)).digestInto(out);
 
-    return key;
+    return out;
 }
 
 /**
