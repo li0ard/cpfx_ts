@@ -4,19 +4,27 @@ import { AsnConvert, OctetString } from "@peculiar/asn1-schema";
 import { PrivateKeyInfo } from "@peculiar/asn1-pkcs8";
 import { Gost3410Parameters } from "./common.js";
 
+/** OID алгоритмов приватного ключа */
 export type ExportOids = {
+    /** Алгоритм ЭП */
     algorithm: string;
+    /** Используемая кривая */
     curve: string;
+    /** Алгоритм хэширования */
     digest: string;
 }
 
+/** Экспортированный приватный ключ */
 export type ExportedPrivateKey = {
+    /** Приватный ключ */
     privateKey: TRet<Uint8Array>;
+    /** OID алгоритмов приватного ключа */
     oids: ExportOids;
 }
 
 const pem = (data: TArg<Uint8Array>, header: string): string => `-----BEGIN ${header.toUpperCase()}-----\n${base64.encode(data).replace(/(.{64})/g, "$1\n")}\n-----END ${header.toUpperCase()}-----`;
 
+/** Конвертация экспортированного ключа в PEM */
 export const encodePrivateKeyToPem = (
     exported: ExportedPrivateKey
 ): string => pem(new Uint8Array(AsnConvert.serialize(

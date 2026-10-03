@@ -5,6 +5,13 @@ import { cpkdf, ecb, getCurveByOid, Magma, magmaSboxes } from "@li0ard/gost";
 import { Gost3410Parameters, id_gost3410_12_256, id_gost3410_12_512, id_gost3410_agreement_512 } from "../common.js";
 import type { ExportedPrivateKey } from "../index.js";
 
+/**
+ * Экспорт приватного ключа из контейнера КриптоПро
+ * @param headerKey Файл `header.key`
+ * @param masksKey Файл `masks.key`
+ * @param primaryKey Файл `primary.key`
+ * @param passw Пароль
+ */
 export const proceed_cryptopro = async (
     headerKey: TArg<Uint8Array>,
     masksKey: TArg<Uint8Array>,
@@ -64,7 +71,7 @@ export const proceed_cryptopro = async (
 
 /**
  * Изменение флага экспортируемости контейнера
- * @param headerKey Содержимое файла header.key
+ * @param headerKey Файл `header.key`
  * @param exportable Новое значение флага экспортируемости
  */
 export const changeContainerExportable = (

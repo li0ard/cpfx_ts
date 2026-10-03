@@ -15,38 +15,35 @@
 ## Установка
 
 ```bash
-# из NPM
 npm i @li0ard/cpfx
-
-# из JSR
-bunx jsr i @li0ard/cpfx
 ```
+
 ## Использование
 ### Декодирование PFX (cpfx)
 ```ts
-import { proceedPFX } from "@li0ard/cpfx";
+import { proceed_pfx, encodePrivateKeyToPem } from "@li0ard/cpfx";
 
 const file = await Bun.file("/path/to.pfx").bytes();
-const result = await proceedPFX(file, "password");
+const exported = await proceedPFX(file, "password");
 
-console.log(result.pem);
+console.log(encodePrivateKeyToPem(exported));
 ```
 
 ### Декодирование ключевого контейнера (ckey)
 ```ts
-import { proceedCryptoProContainer } from "@li0ard/cpfx";
+import { proceed_cryptopro, encodePrivateKeyToPem } from "@li0ard/cpfx";
 
 const headerKey = await Bun.file("/path/to/header.key").bytes();
 const masksKey = await Bun.file("/path/to/masks.key").bytes();
 const primaryKey = await Bun.file("/path/to/primary.key").bytes();
-const result = await proceedCryptoProContainer(
+const exported = await proceed_cryptopro(
     headerKey,
     masksKey,
     primaryKey,
     "password"
 );
 
-console.log(result.pem);
+console.log(encodePrivateKeyToPem(exported));
 ```
 
 ### Изменение флага экспортируемости
@@ -62,4 +59,4 @@ await headerKey.write(newHeaderKey);
 ## Ссылки
 - [Статья про cpfx на Хабре](https://habr.com/ru/articles/693600/)
 - [Статья про ckey на Хабре](https://habr.com/ru/articles/823772/)
-- Цикл статей в блоге: [ч.1](https://blog.li0ard.rest/anticryptopro), [ч.2](https://blog.li0ard.rest/anticryptopro_p2), [ч.3](https://blog.li0ard.rest/anticryptopro_p3)
+- [Цикл статей в блоге](https://blog.li0ard.rest/+anticryptopro)

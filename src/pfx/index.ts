@@ -15,6 +15,11 @@ const parseKeyBag = (bag: TArg<Uint8Array>) => {
     return AsnConvert.parse(keyBag.bagValue, PKCS8ShroudedKeyBag);
 }
 
+/**
+ * Экспорт приватного ключа из PKCS#12
+ * @param file Файл PKCS#12
+ * @param password Пароль
+ */
 export const proceed_pfx = async (
     file: TArg<Uint8Array>,
     password: string
