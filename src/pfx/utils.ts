@@ -1,14 +1,17 @@
-import { ExportKeyBlob, type ParsedBlob } from "./schema.js";
-import { AsnConvert } from "@peculiar/asn1-schema";
+import { cfb, gost341194, kdf_gostr3411_2012_256, kwp, mac_legacy, Magma, magmaSboxes } from "@li0ard/gost";
+import { concatBytes, equalBytes, hexToBytes, numberToBytesBE, type TArg, type TRet } from "@noble/curves/utils.js";
+import { AsnConvert, OctetString } from "@peculiar/asn1-schema";
 import { PrivateKeyInfo } from "@peculiar/asn1-pkcs8";
-import { concatBytes, hexToBytes, type TArg, type TRet } from "@noble/hashes/utils.js";
-import { numberToBytesBE } from "@noble/curves/utils.js";
-import { gost341194 } from "@li0ard/gost/gost341194.js";
-import { Magma, magmaSboxes } from "@li0ard/gost/magma.js";
-import { cfb, kwp } from "@li0ard/gost/modes.js";
-import { kdf_gostr3411_2012_256 } from "@li0ard/gost/kdf.js";
+import { ExportedKey } from "./schema.js";
+import type { ExportedPrivateKey } from "../index.js";
+import { Gost3410Parameters, id_gost3410_12_256, id_gost3410_12_512 } from "../common.js";
 
-/** Преобразование строки в UTF-16le байты */
+export const KEYWRAP_LABEL = hexToBytes("26BDB878");
+
+export const parseEncapsulatedOctetString = (
+    data: TArg<Uint8Array> | TArg<ArrayBuffer>
+): TRet<Uint8Array> => new Uint8Array(AsnConvert.parse(data, OctetString).buffer);
+
 const utf16le = (str: string): TRet<Uint8Array> => {
     const buffer = new Uint8Array(str.length * 2);
     for (let i = 0; i < str.length; i++) {
@@ -56,11 +59,10 @@ export const decodeTransport = (
     key: TArg<Uint8Array>,
     salt: TArg<Uint8Array>,
     encrypted: TArg<Uint8Array>
-): TRet<Uint8Array> => {
-    const cipher = new Magma(key, magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET, true);
-    
-    return cfb(cipher, salt.subarray(0,8)).decrypt(encrypted);
-}
+): TRet<Uint8Array> => cfb(
+    new Magma(key, magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET, true),
+    salt.subarray(0,8)
+).decrypt(encrypted);
 
 /**
  * Парсинг экспортного представления ключа
@@ -68,14 +70,18 @@ export const decodeTransport = (
  * Примечание:
  * MAC экспортного представления расчитывается следующим образом:
  * ```
- * M = MAC(KEKe, ExportKeyBlobValue)
+ * M = MAC(KEKe, ExportedKeyValue)
  * ```
  * @param blob Ключевой блоб
  */
-export const parseBlob = (blob: TArg<Uint8Array>): ParsedBlob => {
-    const parsed = AsnConvert.parse(blob, PrivateKeyInfo);
-    const cryptoproBlob = new Uint8Array(parsed.privateKey.buffer);
-    const parsedBlob = AsnConvert.parse(cryptoproBlob.subarray(16), ExportKeyBlob);
+export const parseBlob = (blob: TArg<Uint8Array>) => {
+    const pki = AsnConvert.parse(blob, PrivateKeyInfo);
+    const parsedBlob = AsnConvert.parse(
+        new Uint8Array(pki.privateKey.buffer).subarray(16),
+        ExportedKey
+    );
+
+    const keyOids = AsnConvert.parse(parsedBlob.value.keyParameters.privateKeyParameters.parameters!, Gost3410Parameters)
 
     return {
         exportEncoding: concatBytes(
@@ -84,10 +90,12 @@ export const parseBlob = (blob: TArg<Uint8Array>): ParsedBlob => {
             new Uint8Array(parsedBlob.value.cek.mac)
         ),
         oids: {
-            algorithm: parsed.privateKeyAlgorithm.algorithm,
-            curve: parsedBlob.value.parameters.privateKeyParameters.oids.curve,
-            digest: parsedBlob.value.parameters.privateKeyParameters.oids.digest,
-        }
+            algorithm: pki.privateKeyAlgorithm.algorithm,
+            curve: keyOids.curve,
+            digest: keyOids.digest
+        },
+        macPayload: new Uint8Array(AsnConvert.serialize(parsedBlob.value)),
+        mac: new Uint8Array(parsedBlob.mac)
     }
 }
 
@@ -99,12 +107,28 @@ export const parseBlob = (blob: TArg<Uint8Array>): ParsedBlob => {
  * KEKe = KDF_GOSTR3411_2012_256(K, label, UKM)
  * Ks = unwrap(KEKe, (UKM || CEK_ENC || CEK_MAC))
  * ```
- * @param key Ранее сгененрированный ключ
- * @param data Данные для unwrap алгоритма (`UKM || CEK_ENC || CEK_MAC`)
  */
 export const decodeExport = (
-    key: TArg<Uint8Array>,
-    data: TArg<Uint8Array>
-): TRet<Uint8Array> => kwp(kdf_gostr3411_2012_256(
-    key,hexToBytes("26BDB878"), data.subarray(0, 8)
-)).unwrap(data);
+    transportKey: TArg<Uint8Array>,
+    exportKeyStruct: TArg<Uint8Array>
+): ExportedPrivateKey => {
+    const blob = parseBlob(exportKeyStruct);
+    if(blob.oids.algorithm !== id_gost3410_12_256 && blob.oids.algorithm !== id_gost3410_12_512)
+        throw new Error("Only GOST 34.10-2012 supported");
+
+    const exportKey = kdf_gostr3411_2012_256(
+        transportKey,
+        KEYWRAP_LABEL,
+        blob.exportEncoding.subarray(0, 8)
+    );
+    const macActual = mac_legacy(new Magma(
+        exportKey,
+        magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET,
+        true
+    )).compute(blob.macPayload).subarray(0,4);
+    if(!equalBytes(macActual, blob.mac))
+        throw new Error("Invalid MAC of export key structure");
+
+    const privateKey = kwp(exportKey).unwrap(blob.exportEncoding);
+    return { privateKey, oids: blob.oids }
+}

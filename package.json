@@ -1,6 +1,6 @@
 {
   "name": "@li0ard/cpfx",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -27,14 +27,14 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@li0ard/gost": "^0.2.3",
+    "@li0ard/gost": "^0.2.6",
     "@noble/curves": "^2.4.0",
     "@noble/hashes": "^2.4.0",
-    "@peculiar/asn1-cms": "^2.9.4",
-    "@peculiar/asn1-pfx": "^2.9.4",
-    "@peculiar/asn1-pkcs8": "^2.9.4",
-    "@peculiar/asn1-schema": "^2.9.4",
-    "@peculiar/asn1-x509": "^2.9.4",
+    "@peculiar/asn1-cms": "^2.10.0",
+    "@peculiar/asn1-pfx": "^2.10.0",
+    "@peculiar/asn1-pkcs8": "^2.10.0",
+    "@peculiar/asn1-schema": "^2.10.0",
+    "@peculiar/asn1-x509": "^2.10.0",
     "@scure/base": "^2.4.0"
   },
   "files": ["dist"],
