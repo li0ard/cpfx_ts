@@ -1,7 +1,7 @@
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { bytesToNumberLE, equalBytes, type TArg, type TRet } from "@noble/curves/utils.js";
 import { Container, ContainerMask, ContainerPrimary } from "./schema.js";
-import { cpkdf, ecb, getCurveByOid, Magma, magmaSboxes } from "@li0ard/gost";
+import { cpkdf, ecb, getCurveByOid, MagmaLegacy, magmaSboxes } from "@li0ard/gost";
 import { Gost3410Parameters, id_gost3410_12_256, id_gost3410_12_512, id_gost3410_agreement_512 } from "../common.js";
 import type { ExportedPrivateKey } from "../index.js";
 
@@ -35,10 +35,9 @@ export const proceed_cryptopro = async (
     if(!signer) throw new Error("Invalid curve");
     const curveLength = signer.Point.Fp.BYTES;
 
-    const maskedPrivateKey = bytesToNumberLE(ecb(new Magma(
+    const maskedPrivateKey = bytesToNumberLE(ecb(new MagmaLegacy(
         cpkdf(passw, new Uint8Array(masks.salt)),
-        magmaSboxes.ID_TC26_GOST_28147_PARAM_Z,
-        true
+        magmaSboxes.TC26_GOST_28147_PARAM_Z,
     )).decrypt(new Uint8Array(primary.value)));
 
     const mask = bytesToNumberLE(new Uint8Array(masks.mask));

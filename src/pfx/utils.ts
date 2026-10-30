@@ -1,4 +1,4 @@
-import { cfb, gost341194, kdf_gostr3411_2012_256, kwp, mac_legacy, Magma, magmaSboxes } from "@li0ard/gost";
+import { cfb, gost341194, kdf_gostr3411_2012_256, kwp, mac_legacy, MagmaLegacy } from "@li0ard/gost";
 import { concatBytes, equalBytes, hexToBytes, numberToBytesBE, type TArg, type TRet } from "@noble/curves/utils.js";
 import { AsnConvert, OctetString } from "@peculiar/asn1-schema";
 import { PrivateKeyInfo } from "@peculiar/asn1-pkcs8";
@@ -61,7 +61,7 @@ export const decodeTransport = (
     salt: TArg<Uint8Array>,
     encrypted: TArg<Uint8Array>
 ): TRet<Uint8Array> => cfb(
-    new Magma(key, magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET, true),
+    new MagmaLegacy(key),
     salt.subarray(0,8)
 ).decrypt(encrypted);
 
@@ -123,11 +123,8 @@ export const decodeExport = (
         KEYWRAP_LABEL,
         blob.exportEncoding.subarray(0, 8)
     );
-    const macActual = mac_legacy(new Magma(
-        exportKey,
-        magmaSboxes.ID_GOST_28147_89_CRYPTO_PRO_A_PARAM_SET,
-        true
-    )).compute(blob.macPayload).subarray(0,4);
+    const macActual = mac_legacy(new MagmaLegacy(exportKey))
+    .compute(blob.macPayload).subarray(0,4);
     if(!equalBytes(macActual, blob.mac))
         throw new Error("Invalid MAC of export key structure");
 
